@@ -1,33 +1,37 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{WebSocket, Action, Controller}
 import play.api.libs.ws.WS
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 import play.api.Logger
 import scala.util.Random
 import play.api.libs.json._
+import play.api.libs.iteratee.{Iteratee, Concurrent}
+import play.api.libs.concurrent.Akka
+import akka.actor.Props
+import actors.UserActor
+import play.api.Play.current
 
 object Application extends Controller {
   
-  def index = Action {
-    Ok(views.html.index.render("Hello Play Framework"))
+  def index = Action { implicit request =>
+    Ok(views.html.index("Hello Play Framework"))
   }
   
   def tweets(query: String) = Action.async {
-    for {
-      tweets <- fetchTweets(query)
-      tweetsWithLatLon <- tweetLatLon((tweets \ "statuses").as[Seq[JsValue]])
-    } yield Ok(Json.obj("statuses" -> tweetsWithLatLon))
+    fetchTweets(query).map(tweets => Ok(tweets))
   }
   
   // searches for tweets based on a query
-  private def fetchTweets(query: String): Future[JsValue] = {
+  def fetchTweets(query: String): Future[JsObject] = {
     val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
-    tweetsFuture.map { response =>
-      response.json
+    tweetsFuture.flatMap { response =>
+      tweetLatLon((response.json \ "statuses").as[Seq[JsValue]])
     } recover {
-      case _ => Json.obj("statuses" -> Json.arr())
+      case _ => Seq.empty[JsValue]
+    } map { tweets =>
+      Json.obj("statuses" -> tweets)
     }
   }
   
@@ -72,6 +76,16 @@ object Application extends Controller {
         ((location \ "lat").as[Double], (location \ "lng").as[Double])
       }.getOrElse(randomLatLon)
     }
+  }
+  
+  def ws = WebSocket.using[JsValue] { request =>
+    val (out, channel) = Concurrent.broadcast[JsValue]
+
+    val userActor = Akka.system.actorOf(Props(classOf[UserActor], channel))
+    
+    val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
+
+    (in, out)
   }
   
 }
