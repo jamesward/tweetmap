@@ -81,7 +81,11 @@ object Application extends Controller {
   def ws = WebSocket.using[JsValue] { request =>
     val (out, channel) = Concurrent.broadcast[JsValue]
 
-    val userActor = Akka.system.actorOf(Props(classOf[UserActor], channel))
+    def pushUpdate(jsValue:JsValue ) = {
+      channel.push(jsValue)
+    }
+
+    val userActor = Akka.system.actorOf(UserActor.props(pushUpdate))
     
     val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
 

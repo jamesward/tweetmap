@@ -1,25 +1,25 @@
 package actors
 
-import akka.actor.Actor
+import akka.actor.{Props, Actor}
 import play.api.libs.json.JsValue
-import play.api.libs.iteratee.Concurrent.Channel
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import controllers.Application
 
-class UserActor(channel: Channel[JsValue]) extends Actor {
-  
+class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
+
   var maybeQuery: Option[String] = None
-  
+
   val tick = context.system.scheduler.schedule(Duration.Zero, 30.seconds, self, FetchTweets)
-  
+
   def receive = {
-    
+
     case FetchTweets =>
-      maybeQuery.map { query =>
-        Application.fetchTweets(query).map(channel.push(_))
+      maybeQuery.map {
+        query =>
+          Application.fetchTweets(query).map(tweetUpdate(_))
       }
-      
+
     case message: JsValue =>
       maybeQuery = (message \ "query").asOpt[String]
 
@@ -28,7 +28,14 @@ class UserActor(channel: Channel[JsValue]) extends Actor {
   override def postStop() {
     tick.cancel()
   }
-  
+
 }
 
 case object FetchTweets
+
+object UserActor {
+
+  def props(tweetUpdate: JsValue => Unit): Props =
+    Props(new UserActor(tweetUpdate))
+
+}
