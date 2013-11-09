@@ -81,9 +81,7 @@ object Application extends Controller {
   def ws = WebSocket.using[JsValue] { request =>
     val (out, channel) = Concurrent.broadcast[JsValue]
 
-    def pushUpdate(jsValue:JsValue ) = {
-      channel.push(jsValue)
-    }
+    def pushUpdate(jsValue: JsValue) = channel.push(jsValue)
 
     val userActor = Akka.system.actorOf(UserActor.props(pushUpdate))
     

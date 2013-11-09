@@ -15,9 +15,8 @@ class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
   def receive = {
 
     case FetchTweets =>
-      maybeQuery.map {
-        query =>
-          Application.fetchTweets(query).map(tweetUpdate(_))
+      maybeQuery.map { query =>
+        Application.fetchTweets(query).map(tweetUpdate(_))
       }
 
     case message: JsValue =>
