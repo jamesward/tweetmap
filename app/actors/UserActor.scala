@@ -4,7 +4,7 @@ import akka.actor.{Props, Actor}
 import play.api.libs.json.JsValue
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import controllers.Application
+import controllers.Tweets
 
 class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
 
@@ -16,7 +16,7 @@ class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
 
     case FetchTweets =>
       maybeQuery.map { query =>
-        Application.fetchTweets(query).map(tweetUpdate(_))
+        Tweets.fetchTweets(query).map(tweetUpdate)
       }
 
     case message: JsValue =>
