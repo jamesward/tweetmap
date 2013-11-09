@@ -23,9 +23,9 @@ class UserActorSpec extends Specification {
       //make the Play Application Akka Actor System available as an implicit actor system
       implicit val actorSystem = Akka.system
 
-      //not sure if it makes sense to validate json?
+      //This is the function called by UserActor when it fetches tweets.  The function fullfills a promise
+      //with the tweets, which allows the results to be tested.
       val promiseJson = Promise[Seq[JsValue]]()
-
       def validateJson(jsValue: JsValue) {
         val tweets = (jsValue \ "statuses").as[Seq[JsValue]]
         promiseJson.success(tweets)
@@ -49,6 +49,7 @@ class UserActorSpec extends Specification {
       userActorRef ! jsonQuery
       userActorRef.underlyingActor.maybeQuery.getOrElse("") must beEqualTo(querySearchTerm)
 
+      //Not sure if it makes sense to validate json?
       val tweets: Seq[JsValue] = Await.result(promiseJson.future, testDuration)
       println(s"tweets  = ${tweets.length}")
       tweets.length must beGreaterThan(1)
