@@ -60,7 +60,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
         object Tweets extends Controller {
         
           def index = Action { implicit request =>
-            Ok(views.html.index("Tweets"))
+            Ok(views.html.index("TweetMap"))
           }
         
           def search(query: String) = Action.async {
@@ -144,13 +144,22 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 1. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
 
+        <a href="#" class="brand pull-left">@title</a>
         <form id="queryForm" class="navbar-search pull-left">
             <input id="twitterQuery" name="twitterQuery" type="text" class="search-query" placeholder="Search">
         </form>
 
-2. Update the `app/views/index.scala.html` file replacing the `div` and `button` with:
+2. Update the `app/views/index.scala.html` file:
 
-        <ul id="tweets"></ul>
+        @(message: String)(implicit request: RequestHeader)
+        
+        @main(message) {
+        
+            <script type='text/javascript' src='@routes.Assets.at("javascripts/index.min.js")'></script>
+        
+            <div id="map"></div>
+        
+        }
 
 3. Create a new file `app/assets/javascripts/index.coffee` containing:
 

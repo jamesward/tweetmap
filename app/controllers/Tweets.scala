@@ -20,7 +20,7 @@ object Tweets extends Controller {
   val tickDuration = Duration(current.configuration.getMilliseconds("tickDuration").get, TimeUnit.MILLISECONDS)
 
   def index = Action { implicit request =>
-    Ok(views.html.index("Tweets"))
+    Ok(views.html.index("TweetMap"))
   }
   
   def search(query: String) = Action.async {
