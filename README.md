@@ -148,7 +148,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
             <input id="twitterQuery" name="twitterQuery" type="text" class="search-query" placeholder="Search">
         </form>
 
-2. Update the `app/views/index.scala.html` file:
+2. Update the `app/views/index.scala.html` file replacing the `div` and `button` with:
 
         <ul id="tweets"></ul>
 
@@ -165,6 +165,8 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
             $("#tweets").empty()
             $.each tweets.statuses, (index, tweet) ->
               $("#tweets").append $("<li>").text(tweet.text)
+
+4. Run the app, make a query, and verify the tweets show up: http://localhost:9000
 
 
 ### Test the Form
