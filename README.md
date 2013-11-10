@@ -94,7 +94,21 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### Test the Controller
 
-*** TODO ***
+1. Update the `test/ApplicationSpec.scala` file with 2 new tests:
+
+        "render index template" in new WithApplication {
+          val html = views.html.index("Coco")
+    
+          contentAsString(html) must contain("Hello Coco")
+        }
+        
+        "search for tweets" in new WithApplication {
+          val search = controllers.Tweets.search("typesafe")(FakeRequest())
+    
+          status(search) must equalTo(OK)
+          contentType(search) must beSome("application/json")
+          (contentAsJson(search) \ "statuses").as[Seq[JsValue]].length must beGreaterThan(0)
+        }
 
 
 ### CoffeeScript Asset Compiler
@@ -104,7 +118,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 2. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
 
         <form id="queryForm" class="navbar-search pull-left">
-            <input id="twitterQuery" type="text" class="search-query" placeholder="Search">
+            <input id="twitterQuery" name="twitterQuery" type="text" class="search-query" placeholder="Search">
         </form>
 
 3. Update the `app/views/index.scala.html` file:
@@ -124,6 +138,23 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
             $("#tweets").empty()
             $.each tweets.statuses, (index, tweet) ->
               $("#tweets").append $("<li>").text(tweet.text)
+
+
+### Test the Form
+
+1. Update the `test/IntegrationSpec.scala` file:
+
+        "work from within a browser" in new WithBrowser(webDriver = FIREFOX) {
+    
+          browser.goTo("http://localhost:" + port)
+    
+          browser.submit("#queryForm", "twitterQuery" -> "typesafe")
+          
+          browser.waitUntil(10, TimeUnit.SECONDS) {
+            browser.find("#tweets li").size() > 0
+          }
+        }
+
 
 ### WebSocket
 
@@ -214,6 +245,56 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
             query: query
           $.get "/tweets?query=" + query, (data) ->
             displayTweets(data)
+
+
+### Test the Actor
+
+1. Create a new file in `test/UserActorSpec.scala` containing:
+
+        import actors.UserActor
+        import akka.testkit.TestActorRef
+        import org.specs2.mutable._
+        import org.specs2.runner._
+        import org.specs2.time.NoTimeConversions
+        import org.junit.runner._
+        
+        import play.api.libs.concurrent.Akka
+        import play.api.libs.json.{JsValue, Json}
+        import play.api.test._
+        
+        import scala.concurrent.duration._
+        import scala.concurrent.{Await, Promise}
+        
+        
+        @RunWith(classOf[JUnitRunner])
+        class UserActorSpec extends Specification with NoTimeConversions {
+        
+          "UserActor" should {
+        
+            "fetch tweets" in new WithApplication {
+        
+              implicit val actorSystem = Akka.system
+        
+              val promiseJson = Promise[Seq[JsValue]]()
+              def validateJson(jsValue: JsValue) {
+                val tweets = (jsValue \ "statuses").as[Seq[JsValue]]
+                promiseJson.success(tweets)
+              }
+        
+              val userActorRef = TestActorRef(new UserActor(validateJson, 1.second))
+        
+              val querySearchTerm = "scala"
+              val jsonQuery = Json.obj("query" -> querySearchTerm)
+        
+              userActorRef ! jsonQuery
+              userActorRef.underlyingActor.maybeQuery.getOrElse("") must beEqualTo(querySearchTerm)
+        
+              Await.result(promiseJson.future, 10.seconds).length must beGreaterThan(1)
+        
+            }
+          }
+        }
+
 
 ### Add the Tweet Map
 

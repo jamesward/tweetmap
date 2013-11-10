@@ -1,6 +1,5 @@
 import actors.UserActor
 import akka.testkit.TestActorRef
-import java.util.concurrent.TimeUnit
 import org.specs2.mutable._
 import org.specs2.runner._
 import org.specs2.time.NoTimeConversions

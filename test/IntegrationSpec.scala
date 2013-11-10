@@ -25,5 +25,6 @@ class IntegrationSpec extends Specification {
         browser.find(".leaflet-marker-icon").size() > 0
       }
     }
+    
   }
 }
