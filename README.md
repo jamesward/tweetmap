@@ -244,11 +244,11 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
         import play.api.libs.concurrent.Execution.Implicits.defaultContext
         import controllers.Tweets
         
-        class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
+        class UserActor(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration) extends Actor {
         
           var maybeQuery: Option[String] = None
         
-          val tick = context.system.scheduler.schedule(Duration.Zero, 30.seconds, self, FetchTweets)
+          val tick = context.system.scheduler.schedule(Duration.Zero, tickDuration, self, FetchTweets)
         
           def receive = {
         
@@ -272,8 +272,8 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
         
         object UserActor {
         
-          def props(tweetUpdate: JsValue => Unit): Props =
-            Props(new UserActor(tweetUpdate))
+          def props(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration): Props =
+            Props(new UserActor(tweetUpdate, tickDuration))
         
         }
 
