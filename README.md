@@ -359,7 +359,9 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           }
         }
 
-3. Run the tests
+3. Update the `test/IntegrationSpec.scala` file replacing `#tweets li` with `.leaflet-marker-icon` instead.
+
+4. Run the tests
 
 
 ### Add the Tweet Map
