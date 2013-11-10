@@ -209,6 +209,10 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           }
         }
 
+3. Update the `test/TweetsSpec.scala` to pass a request to the `index` template:
+
+        val html = views.html.index("Coco")(FakeRequest())
+
 2. Run the tests
 
 

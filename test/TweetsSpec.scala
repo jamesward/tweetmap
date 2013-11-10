@@ -12,7 +12,7 @@ class TweetsSpec extends Specification {
   "Application" should {
 
     "render index template" in new WithApplication {
-      val html = views.html.index("Coco")
+      val html = views.html.index("Coco")(FakeRequest())
 
       contentAsString(html) must contain("Coco")
     }
