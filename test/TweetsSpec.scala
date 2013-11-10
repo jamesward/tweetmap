@@ -22,7 +22,7 @@ class TweetsSpec extends Specification {
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain ("Tweets")
+      contentAsString(home) must contain ("TweetMap")
     }
     
     "search for tweets" in new WithApplication {
