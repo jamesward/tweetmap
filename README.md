@@ -205,7 +205,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### WebSocket
 
-1. Create a new route:
+1. Create a new route in `conf/routes`:
 
         GET        /ws                   controllers.Tweets.ws
 
