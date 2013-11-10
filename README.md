@@ -193,7 +193,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
               browser.submit("#queryForm", "twitterQuery" -> "typesafe")
               
               browser.waitUntil(10, TimeUnit.SECONDS) {
-                browser.find(".leaflet-marker-icon").size() > 0
+                browser.find("#tweets li").size() > 0
               }
             }
             
