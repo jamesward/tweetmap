@@ -157,7 +157,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
         
             <script type='text/javascript' src='@routes.Assets.at("javascripts/index.min.js")'></script>
         
-            <div id="map"></div>
+            <ul id="tweets"></ul>
         
         }
 
