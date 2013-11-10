@@ -25,6 +25,10 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
     * `app/controllers/MessageController.scala`
     * `app/controllers/MainController.java`
     * `app/assets/javascripts/index.js`
+    * `app/assets/javascripts/index.js`
+    * `test/IntegrationTest.java`
+    * `test/MainControllerTest.java`
+    * `test/MessageControllerSpec.scala`
 
 2. Remove the following lines from `conf/routes`:
 
@@ -94,21 +98,47 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### Test the Controller
 
-1. Update the `test/ApplicationSpec.scala` file with 2 new tests:
+1. Create a new `test/TweetsSpec.scala` file:
 
-        "render index template" in new WithApplication {
-          val html = views.html.index("Coco")
-    
-          contentAsString(html) must contain("Hello Coco")
-        }
+        import org.specs2.mutable._
+        import org.specs2.runner._
+        import org.junit.runner._
         
-        "search for tweets" in new WithApplication {
-          val search = controllers.Tweets.search("typesafe")(FakeRequest())
-    
-          status(search) must equalTo(OK)
-          contentType(search) must beSome("application/json")
-          (contentAsJson(search) \ "statuses").as[Seq[JsValue]].length must beGreaterThan(0)
+        import play.api.libs.json.JsValue
+        import play.api.test._
+        import play.api.test.Helpers._
+        
+        @RunWith(classOf[JUnitRunner])
+        class TweetsSpec extends Specification {
+        
+          "Application" should {
+        
+            "render index template" in new WithApplication {
+              val html = views.html.index("Coco")
+        
+              contentAsString(html) must contain("Hello Coco")
+            }
+        
+            "render the index page" in new WithApplication{
+              val home = route(FakeRequest(GET, "/")).get
+        
+              status(home) must equalTo(OK)
+              contentType(home) must beSome.which(_ == "text/html")
+              contentAsString(home) must contain ("Tweets")
+            }
+            
+            "search for tweets" in new WithApplication {
+              val search = controllers.Tweets.search("typesafe")(FakeRequest())
+        
+              status(search) must equalTo(OK)
+              contentType(search) must beSome("application/json")
+              (contentAsJson(search) \ "statuses").as[Seq[JsValue]].length must beGreaterThan(0)
+            }
+            
+          }
         }
+
+2. Run the tests
 
 
 ### CoffeeScript Asset Compiler
