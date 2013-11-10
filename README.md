@@ -306,13 +306,16 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
         tickDuration = 15 seconds
 
+
 ### Test the Actor
 
 1. Add `akka-testkit` to the dependencies in `build.sbt`:
 
         "com.typesafe.akka" %% "akka-testkit" % "2.2.0" % "test"
 
-2. Create a new file in `test/UserActorSpec.scala` containing:
+2. Regenerate the IDE project files to include the new dependency
+
+3. Create a new file in `test/UserActorSpec.scala` containing:
 
         import actors.UserActor
         import akka.testkit.TestActorRef
@@ -358,7 +361,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           }
         }
 
-3. Run the tests
+4. Run the tests
 
 
 ### Add the Tweet Map
