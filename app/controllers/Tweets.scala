@@ -17,8 +17,6 @@ import play.api.Play
 
 object Tweets extends Controller {
 
-  val tickDuration = Duration(current.configuration.getMilliseconds("tickDuration").get, TimeUnit.MILLISECONDS)
-
   def index = Action { implicit request =>
     Ok(views.html.index("TweetMap"))
   }
@@ -41,6 +39,8 @@ object Tweets extends Controller {
 
   def ws = WebSocket.using[JsValue] { request =>
     val (out, channel) = Concurrent.broadcast[JsValue]
+
+    val tickDuration = Duration(current.configuration.getMilliseconds("tickDuration").get, TimeUnit.MILLISECONDS)
 
     val userActor = Akka.system.actorOf(UserActor.props(channel.push, tickDuration))
 
