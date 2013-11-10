@@ -277,14 +277,16 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
         
         }
 
-4. Update the `app/views/index.scala.html` file:
+4. Replace the `ul` in `app/views/index.scala.html` with:
 
-        @(message: String)(implicit request: RequestHeader)
+        <div id="map"></div>
 
-5. Update the `app/views/main.scala.html` file:
+5. Replace the first line in `app/views/main.scala.html` with:
 
         @(title: String)(content: Html)(implicit request: RequestHeader)
 
+    And replace the `body` tag with:
+    
         <body data-ws="@routes.Tweets.ws.webSocketURL()">
 
 6. Update the `app/assets/javascripts/index.coffee` file:
