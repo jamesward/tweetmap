@@ -169,20 +169,38 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 4. Run the app, make a query, and verify the tweets show up: http://localhost:9000
 
 
-### Test the Form
+### Test the Form (Requires Firefox)
 
-1. Update the `test/IntegrationSpec.scala` file:
+1. Create a new `test/IntegrationSpec.scala` file:
 
-        "work from within a browser" in new WithBrowser(webDriver = FIREFOX) {
-    
-          browser.goTo("http://localhost:" + port)
-    
-          browser.submit("#queryForm", "twitterQuery" -> "typesafe")
-          
-          browser.waitUntil(10, TimeUnit.SECONDS) {
-            browser.find("#tweets li").size() > 0
+        import java.util.concurrent.TimeUnit
+        import org.specs2.mutable._
+        import org.specs2.runner._
+        import org.junit.runner._
+        
+        import play.api.test._
+        import play.api.test.Helpers._
+        
+        @RunWith(classOf[JUnitRunner])
+        class IntegrationSpec extends Specification {
+        
+          "Application" should {
+        
+            "work from within a browser" in new WithBrowser(webDriver = FIREFOX) {
+        
+              browser.goTo("http://localhost:" + port)
+        
+              browser.submit("#queryForm", "twitterQuery" -> "typesafe")
+              
+              browser.waitUntil(10, TimeUnit.SECONDS) {
+                browser.find(".leaflet-marker-icon").size() > 0
+              }
+            }
+            
           }
         }
+
+2. Run the tests
 
 
 ### WebSocket
