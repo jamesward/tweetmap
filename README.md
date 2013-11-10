@@ -116,7 +116,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
             "render index template" in new WithApplication {
               val html = views.html.index("Coco")
         
-              contentAsString(html) must contain("Hello Coco")
+              contentAsString(html) must contain("Coco")
             }
         
             "render the index page" in new WithApplication{

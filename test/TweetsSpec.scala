@@ -14,7 +14,7 @@ class TweetsSpec extends Specification {
     "render index template" in new WithApplication {
       val html = views.html.index("Coco")
 
-      contentAsString(html) must contain("Hello Coco")
+      contentAsString(html) must contain("Coco")
     }
 
     "render the index page" in new WithApplication{
