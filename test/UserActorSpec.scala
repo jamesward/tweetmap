@@ -3,6 +3,7 @@ import akka.testkit.TestActorRef
 import java.util.concurrent.TimeUnit
 import org.specs2.mutable._
 import org.specs2.runner._
+import org.specs2.time.NoTimeConversions
 import org.junit.runner._
 
 import play.api.libs.concurrent.Akka
@@ -14,7 +15,7 @@ import scala.concurrent.{Await, Promise}
 
 
 @RunWith(classOf[JUnitRunner])
-class UserActorSpec extends Specification {
+class UserActorSpec extends Specification with NoTimeConversions {
 
   "UserActor" should {
 
@@ -31,17 +32,10 @@ class UserActorSpec extends Specification {
         promiseJson.success(tweets)
       }
 
-      // why doesn't this work?
-      //does it have to do with specs2 time conversions -i.e. see:
-      //  import org.specs2.time.NoTimeConversions
-      // val tickDuration = 1 second
-      val tickDuration = Duration(1, TimeUnit.SECONDS)
-      val userActorRef = TestActorRef(new UserActor(validateJson, tickDuration))
+      val userActorRef = TestActorRef(new UserActor(validateJson, 1.second))
 
       val querySearchTerm = "scala"
       val jsonQuery = Json.obj("query" -> querySearchTerm)
-
-      val testDuration = Duration(10, TimeUnit.SECONDS)
 
       // The tests need to be delayed a certain amount of time so the tick message gets fired.  This can be done using either
       // Await.result below or using the Akka test kit within(testDuration) {
@@ -49,13 +43,7 @@ class UserActorSpec extends Specification {
       userActorRef ! jsonQuery
       userActorRef.underlyingActor.maybeQuery.getOrElse("") must beEqualTo(querySearchTerm)
 
-      //Not sure if it makes sense to validate json?
-      val tweets: Seq[JsValue] = Await.result(promiseJson.future, testDuration)
-      println(s"tweets  = ${tweets.length}")
-      tweets.length must beGreaterThan(1)
-
-      // because the UserActor sends the message to itself is there anyway to insert a probe to test it is sent?
-      // expectMsg(FetchTweets)
+      Await.result(promiseJson.future, 10.seconds).length must beGreaterThan(1)
 
     }
   }

@@ -1,3 +1,4 @@
+import java.util.concurrent.TimeUnit
 import org.specs2.mutable._
 import org.specs2.runner._
 import org.junit.runner._
@@ -14,11 +15,15 @@ class IntegrationSpec extends Specification {
 
   "Application" should {
 
-    "work from within a browser" in new WithBrowser {
+    "work from within a browser" in new WithBrowser(webDriver = FIREFOX) {
 
       browser.goTo("http://localhost:" + port)
 
-      browser.pageSource must contain("Hello Play Framework")
+      browser.submit("#queryForm", "twitterQuery" -> "typesafe")
+      
+      browser.waitUntil(10, TimeUnit.SECONDS) {
+        browser.find(".leaflet-marker-icon").size() > 0
+      }
     }
   }
 }
