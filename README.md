@@ -25,7 +25,6 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
     * `app/controllers/MessageController.scala`
     * `app/controllers/MainController.java`
     * `app/assets/javascripts/index.js`
-    * `app/assets/javascripts/index.js`
     * `test/IntegrationTest.java`
     * `test/MainControllerTest.java`
     * `test/MessageControllerSpec.scala`
@@ -143,19 +142,17 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### CoffeeScript Asset Compiler
 
-1. Delete `app/assets/javascripts/index.js`
-
-2. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
+1. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
 
         <form id="queryForm" class="navbar-search pull-left">
             <input id="twitterQuery" name="twitterQuery" type="text" class="search-query" placeholder="Search">
         </form>
 
-3. Update the `app/views/index.scala.html` file:
+2. Update the `app/views/index.scala.html` file:
 
         <ul id="tweets"></ul>
 
-4. Create a new file `app/assets/javascripts/index.coffee` containing:
+3. Create a new file `app/assets/javascripts/index.coffee` containing:
 
         $ ->
           $("#queryForm").submit (event) ->
