@@ -302,6 +302,9 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           $.get "/tweets?query=" + query, (data) ->
             displayTweets(data)
 
+6. Add a config parameter to `conf/application.conf`:
+
+        tickDuration = 15 seconds
 
 ### Test the Actor
 
