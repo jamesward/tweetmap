@@ -279,11 +279,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
         
         }
 
-4. Replace the `ul` in `app/views/index.scala.html` with:
-
-        <div id="map"></div>
-
-5. Replace the first line in `app/views/main.scala.html` with:
+4. Replace the first line in `app/views/main.scala.html` with:
 
         @(title: String)(content: Html)(implicit request: RequestHeader)
 
@@ -291,7 +287,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
     
         <body data-ws="@routes.Tweets.ws.webSocketURL()">
 
-6. Update the `app/assets/javascripts/index.coffee` file:
+5. Update the `app/assets/javascripts/index.coffee` file:
 
         ws = new WebSocket $("body").data("ws")
           ws.onmessage = (event) ->
@@ -359,9 +355,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           }
         }
 
-3. Update the `test/IntegrationSpec.scala` file replacing `#tweets li` with `.leaflet-marker-icon` instead.
-
-4. Run the tests
+3. Run the tests
 
 
 ### Add the Tweet Map
