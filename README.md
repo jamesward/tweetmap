@@ -226,13 +226,9 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
         def ws = WebSocket.using[JsValue] { request =>
           val (out, channel) = Concurrent.broadcast[JsValue]
-      
-          def pushUpdate(jsValue: JsValue) = {
-            channel.push(jsValue)
-          }
     
-          val userActor = Akka.system.actorOf(UserActor.props(pushUpdate))
-        
+          val userActor = Akka.system.actorOf(UserActor.props(channel.push, tickDuration))
+    
           val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
     
           (in, out)
