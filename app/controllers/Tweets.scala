@@ -17,7 +17,7 @@ import play.api.Play
 
 object Tweets extends Controller {
 
-  val tickDuration = Duration(Akka.system.settings.config.getMilliseconds("tickDuration"), TimeUnit.MILLISECONDS)
+  val tickDuration = Duration(current.configuration.getMilliseconds("tickDuration").get, TimeUnit.MILLISECONDS)
 
   def index = Action { implicit request =>
     Ok(views.html.index("Tweets"))
