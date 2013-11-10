@@ -391,18 +391,18 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           right: 0px;
         }
 
-5. Update the `app/assets/javascripts/index.coffee` file with:
+5. Update the `app/assets/javascripts/index.coffee` file with the following (replacing the `displayTweets` function):
 
         map = L.map('map').setView([0, 0], 2)
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map)
         
-        displayTweetsOnMap = (map, tweets) ->
+        displayTweets = (tweets) ->
           $.each tweets.statuses, (index, tweet) ->
             L.marker([tweet.coordinates.coordinates[1], tweet.coordinates.coordinates[0]])
              .addTo(map)
              .bindPopup(tweet.text)
              .openPopup()
-
+       
 6. Create new functions in `app/controllers/Tweets.scala` to get (or fake) the location of the tweets:
 
         private def putLatLonInTweet(latLon: JsValue) = __.json.update(__.read[JsObject].map(_ + ("coordinates" -> Json.obj("coordinates" -> latLon))))
