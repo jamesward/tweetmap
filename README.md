@@ -3,24 +3,12 @@
 ### Setup
 
 1. Install Activator: Copy the zip file to your computer, extract the zip, double-click on the `activator` or `activator.bat` file to launch the Activator UI
+
 2. Create a new app with the `Hello Play Framework` template
+
 3. Optional: Open the project in an IDE: Select `Code` then `Open` then select your IDE and follow the instructions to generate the project files and open the project in Eclipse or IntelliJ
 
-
-### Basics
-
-Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
-
-* Running the App
-* Running the Tests
-* Routes
-* Controllers
-* Views
-
-
-### Setup Part 2
-
-1. Delete:
+4. Delete:
 
     * `app/controllers/MessageController.scala`
     * `app/controllers/MainController.java`
@@ -29,18 +17,24 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
     * `test/MainControllerTest.java`
     * `test/MessageControllerSpec.scala`
 
-2. Remove the following lines from `conf/routes`:
+5. Remove the following lines from `conf/routes`:
 
         GET        /                                 controllers.MainController.index()
         GET        /message                          controllers.MessageController.getMessage()
         GET        /assets/javascripts/routes        controllers.MessageController.javascriptRoutes()
 
-3. Remove the following line from `app/views/main.scala.html`:
+6. Remove the following line from `app/views/main.scala.html`:
 
         <script type="text/javascript" src="@routes.MessageController.javascriptRoutes"></script> 
 
 
 ### Reactive Requests
+
+* Routes
+* Controllers
+* Views
+* Reactive Requests
+* JSON
 
 1. Create a new route in `conf/routes`:
 
@@ -97,6 +91,9 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### Test the Controller
 
+* Specs2
+* Running the Tests
+
 1. Create a new `test/TweetsSpec.scala` file:
 
         import org.specs2.mutable._
@@ -142,6 +139,10 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### CoffeeScript Asset Compiler
 
+* Asset Compiler
+* Bootstrap
+* CoffeeScript
+
 1. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
 
         <a href="#" class="brand pull-left">@title</a>
@@ -180,6 +181,8 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### Test the Form (Requires Firefox)
 
+* Selenium
+
 1. Create a new `test/IntegrationSpec.scala` file:
 
         import java.util.concurrent.TimeUnit
@@ -217,6 +220,9 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 
 ### WebSocket
+
+* WebSockets
+* Actors
 
 1. Create a new route in `conf/routes`:
 
@@ -365,6 +371,9 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 
 ### Add the Tweet Map
+
+* WebJars
+* Less
 
 1. Add a new dependency to the `build.sbt` file:
 
