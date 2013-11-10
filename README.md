@@ -307,7 +307,11 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
 
 ### Test the Actor
 
-1. Create a new file in `test/UserActorSpec.scala` containing:
+1. Add `akka-testkit` to the dependencies in `build.sbt`:
+
+        "com.typesafe.akka" %% "akka-testkit" % "2.2.0" % "test"
+
+2. Create a new file in `test/UserActorSpec.scala` containing:
 
         import actors.UserActor
         import akka.testkit.TestActorRef
@@ -353,7 +357,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           }
         }
 
-2. Run the tests
+3. Run the tests
 
 
 ### Add the Tweet Map
