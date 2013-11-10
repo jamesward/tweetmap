@@ -391,7 +391,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           right: 0px;
         }
 
-5. Update the `app/assets/javascripts/index.coffee` file with the following (replacing the `displayTweets` function):
+6. Update the `app/assets/javascripts/index.coffee` file with the following (replacing the `displayTweets` function):
 
         map = L.map('map').setView([0, 0], 2)
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map)
@@ -403,7 +403,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
              .bindPopup(tweet.text)
              .openPopup()
        
-6. Create new functions in `app/controllers/Tweets.scala` to get (or fake) the location of the tweets:
+7. Create new functions in `app/controllers/Tweets.scala` to get (or fake) the location of the tweets:
 
         private def putLatLonInTweet(latLon: JsValue) = __.json.update(__.read[JsObject].map(_ + ("coordinates" -> Json.obj("coordinates" -> latLon))))
                
@@ -438,7 +438,7 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
           }
         }
 
-7. In `app/controllers/Tweets.scala` update the `fetchTweets` function to use the new `tweetLatLon` function:
+8. In `app/controllers/Tweets.scala` update the `fetchTweets` function to use the new `tweetLatLon` function:
 
         def fetchTweets(query: String): Future[JsValue] = {
           val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
@@ -450,3 +450,5 @@ Slides: http://presos.jamesward.com/introduction_to_the_play_framework-scala
             Json.obj("statuses" -> tweets)
           }
         }
+
+9. Refresh your browser to see the TweetMap!
