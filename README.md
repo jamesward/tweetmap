@@ -247,6 +247,8 @@
                 twitterService.tweets = JSON.parse(event.data).statuses;
             });
         };
+        
+        return twitterService;
 
 
 ### Test the Actor
