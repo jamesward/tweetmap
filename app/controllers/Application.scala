@@ -11,11 +11,9 @@ import play.api.libs.concurrent.Akka
 import actors.UserActor
 import play.api.Play.current
 import scala.util.Random
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import play.api.Play
+import akka.actor.Props
 
-object Tweets extends Controller {
+object Application extends Controller {
 
   def index = Action { implicit request =>
     Ok(views.html.index("TweetMap"))
@@ -40,9 +38,7 @@ object Tweets extends Controller {
   def ws = WebSocket.using[JsValue] { request =>
     val (out, channel) = Concurrent.broadcast[JsValue]
 
-    val tickDuration = Duration(current.configuration.getMilliseconds("tickDuration").get, TimeUnit.MILLISECONDS)
-
-    val userActor = Akka.system.actorOf(UserActor.props(channel.push, tickDuration))
+    val userActor = Akka.system.actorOf(Props(new UserActor(channel.push)))
 
     val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
 

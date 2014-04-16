@@ -31,7 +31,7 @@ class UserActorSpec extends Specification with NoTimeConversions {
         promiseJson.success(tweets)
       }
 
-      val userActorRef = TestActorRef(new UserActor(validateJson, 1.second))
+      val userActorRef = TestActorRef(new UserActor(validateJson))
 
       val querySearchTerm = "scala"
       val jsonQuery = Json.obj("query" -> querySearchTerm)

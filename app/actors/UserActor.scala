@@ -1,22 +1,22 @@
 package actors
 
-import akka.actor.{Props, Actor}
+import akka.actor.Actor
 import play.api.libs.json.JsValue
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import controllers.Tweets
+import controllers.Application
 
-class UserActor(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration) extends Actor {
+class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
 
   var maybeQuery: Option[String] = None
 
-  val tick = context.system.scheduler.schedule(Duration.Zero, tickDuration, self, FetchTweets)
+  val tick = context.system.scheduler.schedule(Duration.Zero, 5.seconds, self, FetchTweets)
 
   def receive = {
 
     case FetchTweets =>
       maybeQuery.map { query =>
-        Tweets.fetchTweets(query).map(tweetUpdate)
+        Application.fetchTweets(query).map(tweetUpdate)
       }
 
     case message: JsValue =>
@@ -31,10 +31,3 @@ class UserActor(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration) exten
 }
 
 case object FetchTweets
-
-object UserActor {
-
-  def props(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration): Props =
-    Props(new UserActor(tweetUpdate, tickDuration))
-
-}

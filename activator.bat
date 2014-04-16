@@ -10,7 +10,7 @@
 @echo off
 if "%ACTIVATOR_HOME%"=="" set "ACTIVATOR_HOME=%~dp0"
 set ERROR_CODE=0
-set APP_VERSION=1.0.8
+set APP_VERSION=1.1.1
 set ACTIVATOR_LAUNCH_JAR=activator-launch-%APP_VERSION%.jar
 
 rem Detect if we were double clicked, although theoretically A user could
@@ -90,7 +90,7 @@ if "%_JAVA_OPTS%"=="" set _JAVA_OPTS=%CFG_OPTS%
 if "%*"=="" (
   if defined DOUBLECLICKED (
     set CMDS="ui"
-  ) else set CMD=%*
+  ) else set CMDS=%*
 ) else set CMDS=%*
 
 rem We add a / in front, so we get file:///C: instead of file://C:

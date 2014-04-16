@@ -4,6 +4,12 @@
 
     <script type='text/javascript' src='@routes.Assets.at("javascripts/index.min.js")'></script>
 
-    <div id="map"></div>
+    <div ng-controller="Tweets">
+        <ul>
+            <li ng-repeat="tweet in tweets">{{tweet.text}}</li>
+        </ul>
+
+        <leaflet width="100%" height="500px" markers="markers"></leaflet>
+    </div>
 
 }

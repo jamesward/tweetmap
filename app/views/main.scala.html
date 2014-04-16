@@ -1,23 +1,26 @@
 @(title: String)(content: Html)(implicit request: RequestHeader)
-
 <!DOCTYPE html>
-<html>
+<html ng-app="myApp">
 <head>
     <title>@title</title>
     <link rel='shortcut icon' type='image/png' href='@routes.Assets.at("images/favicon.png")'>
     <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("bootstrap.min.css"))'>
     <link rel='stylesheet' href='@routes.Assets.at("stylesheets/index.css")'>
+    
+    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("angular.min.js"))"></script>
+    <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
+
     <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.css"))'>
     <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.js"))'></script>
-    <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'></script>
+    <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("angular-leaflet-directive.min.js"))'></script>
 </head>
-    <body data-ws="@routes.Tweets.ws.webSocketURL()">
+<body>
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
-            <div class="container-fluid">
+            <div class="container-fluid" ng-controller="Search">
                 <a href="#" class="brand pull-left">@title</a>
-                <form id="queryForm" class="navbar-search pull-left">
-                    <input id="twitterQuery" name="twitterQuery" type="text" class="search-query" placeholder="Search">
+                <form class="navbar-search pull-left" ng-submit="search()">
+                    <input ng-model="query" class="search-query" placeholder="Search">
                 </form>
             </div>
         </div>

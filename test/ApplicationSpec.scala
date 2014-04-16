@@ -7,7 +7,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 @RunWith(classOf[JUnitRunner])
-class TweetsSpec extends Specification {
+class ApplicationSpec extends Specification {
 
   "Application" should {
 
@@ -26,7 +26,7 @@ class TweetsSpec extends Specification {
     }
     
     "search for tweets" in new WithApplication {
-      val search = controllers.Tweets.search("typesafe")(FakeRequest())
+      val search = controllers.Application.search("typesafe")(FakeRequest())
 
       status(search) must equalTo(OK)
       contentType(search) must beSome("application/json")
