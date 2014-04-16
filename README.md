@@ -332,7 +332,11 @@
 
         <leaflet width="100%" height="500px" markers="markers"></leaflet>
 
-5. Update the `app.controller('Tweets'` section of `app/assets/javascripts/index.js` file with the following:
+5. Update the first line of the `app/assets/javascripts/index.js` file with the following:
+
+            var app = angular.module('myApp', ["leaflet-directive"]);
+
+6. Update the `app.controller('Tweets'` section of the `app/assets/javascripts/index.js` file with the following:
 
             $scope.tweets = [];
             $scope.markers = [];
