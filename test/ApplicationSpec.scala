@@ -12,7 +12,7 @@ class ApplicationSpec extends Specification {
   "Application" should {
 
     "render index template" in new WithApplication {
-      val html = views.html.index("Coco")(FakeRequest())
+      val html = views.html.index("Coco")
 
       contentAsString(html) must contain("Coco")
     }
@@ -24,7 +24,7 @@ class ApplicationSpec extends Specification {
       contentType(home) must beSome.which(_ == "text/html")
       contentAsString(home) must contain ("TweetMap")
     }
-    
+
     "search for tweets" in new WithApplication {
       val search = controllers.Application.search("typesafe")(FakeRequest())
 
