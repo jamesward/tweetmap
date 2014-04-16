@@ -76,7 +76,7 @@
             }
             
             "search for tweets" in new WithApplication {
-              val search = controllers.Tweets.search("typesafe")(FakeRequest())
+              val search = controllers.Application.search("typesafe")(FakeRequest())
         
               status(search) must equalTo(OK)
               contentType(search) must beSome("application/json")
