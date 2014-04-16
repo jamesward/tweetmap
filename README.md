@@ -115,7 +115,7 @@
 
 4. Replace the `app/views/index.scala.html` file:
 
-        @(message: String)(implicit request: RequestHeader)
+        @(message: String)
         
         @main(message) {
         
