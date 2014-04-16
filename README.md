@@ -4,59 +4,19 @@
 
 1. Install Activator: Copy the zip file to your computer, extract the zip, double-click on the `activator` or `activator.bat` file to launch the Activator UI
 
-2. Create a new app with the `Hello Play Framework` template
+2. Create a new app with the `Hello Play Framework (Scala Only)` template
 
 3. Optional: Open the project in an IDE: Select `Code` then `Open` then select your IDE and follow the instructions to generate the project files and open the project in Eclipse or IntelliJ
-
-4. Delete:
-
-    * `app/controllers/MessageController.scala`
-    * `app/controllers/MainController.java`
-    * `app/assets/javascripts/index.js`
-    * `test/IntegrationTest.java`
-    * `test/MainControllerTest.java`
-    * `test/MessageControllerSpec.scala`
-
-5. Remove the following lines from `conf/routes`:
-
-        GET        /                                 controllers.MainController.index()
-        GET        /message                          controllers.MessageController.getMessage()
-        GET        /assets/javascripts/routes        controllers.MessageController.javascriptRoutes()
-
-6. Remove the following line from `app/views/main.scala.html`:
-
-        <script type="text/javascript" src="@routes.MessageController.javascriptRoutes"></script> 
 
 
 ### Reactive Requests
 
-* Routes
-* Controllers
-* Views
-* Reactive Requests
-* JSON
-
 1. Create a new route in `conf/routes`:
 
-        GET        /                     controllers.Tweets.index
-        GET        /tweets               controllers.Tweets.search(query: String)
+        GET        /tweets               controllers.Application.search(query: String)
 
-2. Create a new Controller `app/controllers/Tweets.scala`:
+2. Create a new reactive request handler in `app/controllers/Application.scala`:
 
-        package controllers
-        
-        import play.api.mvc.{Action, Controller}
-        import scala.concurrent.Future
-        import play.api.libs.json.{JsValue, Json}
-        import play.api.libs.ws.WS
-        import play.api.libs.concurrent.Execution.Implicits.defaultContext
-        
-        object Tweets extends Controller {
-        
-          def index = Action { implicit request =>
-            Ok(views.html.index("TweetMap"))
-          }
-        
           def search(query: String) = Action.async {
             fetchTweets(query).map(tweets => Ok(tweets))
           }
@@ -69,44 +29,14 @@
               case _ => Json.obj("responses" -> Json.arr())
             }
           }
-        
-        }
 
 3. Test it: http://localhost:9000/tweets?query=typesafe
 
 
-### Fake Tweet Service (In-case of bad Internet)
-
-1. Create a new route in `conf/routes`:
-
-        GET        /fakeTweets               controllers.Tweets.fakeTweets
-
-2. Create a new method in `app/controllers/Tweets.scala`:
-
-        def fakeTweets = Action {
-          val json = Json.arr("statuses" -> Seq(Json.obj("text" -> "test tweet 1"), Json.obj("text" -> "test tweet 2")))
-          Ok(Json.toJson(json))
-        }
-
-
 ### Test the Controller
 
-* Specs2
-* Running the Tests
+1. Update the `test/ApplicationSpec.scala` file with these tests:
 
-1. Create a new `test/TweetsSpec.scala` file:
-
-        import org.specs2.mutable._
-        import org.specs2.runner._
-        import org.junit.runner._
-        
-        import play.api.libs.json.JsValue
-        import play.api.test._
-        import play.api.test.Helpers._
-        
-        @RunWith(classOf[JUnitRunner])
-        class TweetsSpec extends Specification {
-        
           "Application" should {
         
             "render index template" in new WithApplication {
@@ -132,137 +62,132 @@
             }
             
           }
-        }
 
 2. Run the tests
 
 
-### CoffeeScript Asset Compiler
+### AngularJS UI
 
-* Asset Compiler
-* Bootstrap
-* CoffeeScript
+1. Add WebJar dependency to `build.sbt`:
 
-1. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
+        "org.webjars" % "angularjs" % "1.2.16"
 
-        <a href="#" class="brand pull-left">@title</a>
-        <form id="queryForm" class="navbar-search pull-left">
-            <input id="twitterQuery" name="twitterQuery" type="text" class="search-query" placeholder="Search">
-        </form>
+2. Enable AngularJS in the `app/views/main.scala.html` file:
 
-2. Replace the `app/views/index.scala.html` file:
+        <html ng-app="myApp">
+        
+        
+        <script src="@routes.WebJarAssets.at(WebJarAssets.locate("angular.min.js"))"></script>
+        <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
+
+3. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
+
+
+            <div class="container-fluid" ng-controller="Search">
+                <a href="#" class="brand pull-left">@title</a>
+                <form class="navbar-search pull-left" ng-submit="search()">
+                    <input ng-model="query" class="search-query" placeholder="Search">
+                </form>
+            </div>
+
+4. Replace the `app/views/index.scala.html` file:
 
         @(message: String)(implicit request: RequestHeader)
         
         @main(message) {
         
-            <script type='text/javascript' src='@routes.Assets.at("javascripts/index.min.js")'></script>
-        
-            <ul id="tweets"></ul>
+            <div ng-controller="Tweets">
+                <ul>
+                    <li ng-repeat="tweet in tweets">{{tweet.text}}</li>
+                </ul>
+            </div>
         
         }
 
-3. Create a new file `app/assets/javascripts/index.coffee` containing:
+5. Create a new file `app/assets/javascripts/index.js` containing:
 
-        $ ->
-          $("#queryForm").submit (event) ->
-            event.preventDefault()
-            query = $("#twitterQuery").val()
-            $.get "/tweets?query=" + query, (data) ->
-              displayTweets(data)
+        var app = angular.module('myApp', []);
         
-          displayTweets = (tweets) ->
-            $("#tweets").empty()
-            $.each tweets.statuses, (index, tweet) ->
-              $("#tweets").append $("<li>").text(tweet.text)
-
-4. Run the app, make a query, and verify the tweets show up: http://localhost:9000
-
-
-### Test the Form (Requires Firefox)
-
-* Selenium
-
-1. Create a new `test/IntegrationSpec.scala` file:
-
-        import java.util.concurrent.TimeUnit
-        import org.specs2.mutable._
-        import org.specs2.runner._
-        import org.junit.runner._
-        
-        import play.api.test._
-        import play.api.test.Helpers._
-        
-        @RunWith(classOf[JUnitRunner])
-        class IntegrationSpec extends Specification {
-        
-          "Application" should {
-        
-            "work from within a browser" in new WithBrowser(webDriver = FIREFOX) {
-        
-              browser.goTo("http://localhost:" + port)
-        
-              browser.submit("#queryForm", "twitterQuery" -> "typesafe")
-              
-              browser.waitUntil(10, TimeUnit.SECONDS) {
-                browser.find("#tweets li").size() > 0
-              }
-            }
+        app.factory('Twitter', function($http, $timeout) {
             
-          }
-        }
+            var twitterService = {
+                tweets: [],
+                query: function (query) {
+                    $http({method: 'GET', url: '/tweets', params: {query: query}}).
+                        success(function (data) {
+                            twitterService.tweets = data.statuses;
+                        });
+                }
+            };
+            
+            return twitterService;
+        });
+        
+        app.controller('Search', function($scope, $http, $timeout, Twitter) {
+        
+            $scope.search = function() {
+                Twitter.query($scope.query);
+            };
+        
+        });
+        
+        app.controller('Tweets', function($scope, $http, $timeout, Twitter) {
+        
+            $scope.tweets = [];
+            
+            $scope.$watch(
+                function() {
+                    return Twitter.tweets;
+                },
+                function(tweets) { 
+                    $scope.tweets = tweets;
+                }
+            );
+            
+        });
 
-3. Update the `test/TweetsSpec.scala` to pass a request to the `index` template:
-
-        val html = views.html.index("Coco")(FakeRequest())
-
-2. Run the tests
+6. Run the app, make a query, and verify the tweets show up: http://localhost:9000
 
 
 ### WebSocket
 
-* WebSockets
-* Actors
-
 1. Create a new route in `conf/routes`:
 
-        GET        /ws                   controllers.Tweets.ws
+        GET        /ws                   controllers.Application.ws
 
-2. Add a new controller method in `app/controllers/Tweets.scala`:
+2. Add a new controller method in `app/controllers/Application.scala`:
 
-        def ws = WebSocket.using[JsValue] { request =>
-          val (out, channel) = Concurrent.broadcast[JsValue]
-    
-          val tickDuration = Duration(current.configuration.getMilliseconds("tickDuration").get, TimeUnit.MILLISECONDS)
-    
-          val userActor = Akka.system.actorOf(UserActor.props(channel.push, tickDuration))
-    
-          val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
-    
-          (in, out)
-        }
+          def ws = WebSocket.using[JsValue] { request =>
+            val (out, channel) = Concurrent.broadcast[JsValue]
+        
+            val userActor = Akka.system.actorOf(Props(new UserActor(channel.push)))
+        
+            val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
+        
+            (in, out)
+          }
         
 3. Create an Actor in `app/actors/UserActor.scala` containing:
 
         package actors
         
-        import akka.actor.{Props, Actor}
+        import akka.actor.Actor
         import play.api.libs.json.JsValue
         import scala.concurrent.duration._
         import play.api.libs.concurrent.Execution.Implicits.defaultContext
-        import controllers.Tweets
+        import controllers.Application
         
-        class UserActor(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration) extends Actor {
+        class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
         
           var maybeQuery: Option[String] = None
         
-          val tick = context.system.scheduler.schedule(Duration.Zero, tickDuration, self, FetchTweets)
+          val tick = context.system.scheduler.schedule(Duration.Zero, 5.seconds, self, FetchTweets)
         
           def receive = {
         
             case FetchTweets =>
               maybeQuery.map { query =>
-                Tweets.fetchTweets(query).map(tweetUpdate)
+                Application.fetchTweets(query).map(tweetUpdate)
               }
         
             case message: JsValue =>
@@ -277,40 +202,27 @@
         }
         
         case object FetchTweets
+
+4. Update the `app.factory` section of `app/assets/javascripts/index.js` with:
+
+        var ws = new WebSocket("ws://localhost:9000/ws");
         
-        object UserActor {
+        var twitterService = {
+            tweets: [],
+            query: function (query) {
+                $http({method: 'GET', url: '/tweets', params: {query: query}}).
+                    success(function (data) {
+                        twitterService.tweets = data.statuses;
+                    });
+                ws.send(JSON.stringify({query: query}));
+            }
+        };
         
-          def props(tweetUpdate: JsValue => Unit, tickDuration:FiniteDuration): Props =
-            Props(new UserActor(tweetUpdate, tickDuration))
-        
-        }
-
-4. Replace the first line in `app/views/main.scala.html` with:
-
-        @(title: String)(content: Html)(implicit request: RequestHeader)
-
-    And replace the `body` tag with:
-    
-        <body data-ws="@routes.Tweets.ws.webSocketURL()">
-
-5. Update the `app/assets/javascripts/index.coffee` file:
-
-        ws = new WebSocket $("body").data("ws")
-          ws.onmessage = (event) ->
-            data = JSON.parse event.data
-            displayTweets(data)
-            
-        $("#queryForm").submit (event) ->
-          event.preventDefault()
-          query = $("#twitterQuery").val()
-          ws.send JSON.stringify
-            query: query
-          $.get "/tweets?query=" + query, (data) ->
-            displayTweets(data)
-
-6. Add a config parameter to `conf/application.conf`:
-
-        tickDuration = 15 seconds
+        ws.onmessage = function(event) {
+            $timeout(function() {
+                twitterService.tweets = JSON.parse(event.data).statuses;
+            });
+        };
 
 
 ### Test the Actor
@@ -345,18 +257,24 @@
         
             "fetch tweets" in new WithApplication {
         
+              //make the Play Application Akka Actor System available as an implicit actor system
               implicit val actorSystem = Akka.system
         
+              //This is the function called by UserActor when it fetches tweets.  The function fullfills a promise
+              //with the tweets, which allows the results to be tested.
               val promiseJson = Promise[Seq[JsValue]]()
               def validateJson(jsValue: JsValue) {
                 val tweets = (jsValue \ "statuses").as[Seq[JsValue]]
                 promiseJson.success(tweets)
               }
         
-              val userActorRef = TestActorRef(new UserActor(validateJson, 1.second))
+              val userActorRef = TestActorRef(new UserActor(validateJson))
         
               val querySearchTerm = "scala"
               val jsonQuery = Json.obj("query" -> querySearchTerm)
+        
+              // The tests need to be delayed a certain amount of time so the tick message gets fired.  This can be done using either
+              // Await.result below or using the Akka test kit within(testDuration) {
         
               userActorRef ! jsonQuery
               userActorRef.underlyingActor.maybeQuery.getOrElse("") must beEqualTo(querySearchTerm)
@@ -372,12 +290,9 @@
 
 ### Add the Tweet Map
 
-* WebJars
-* Less
-
 1. Add a new dependency to the `build.sbt` file:
 
-        "org.webjars" % "leaflet" % "0.6.4"
+        "org.webjars" % "angular-leaflet-directive" % "0.7.6",
 
 2. Restart the Play app
 
@@ -385,79 +300,81 @@
 
         <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.css"))'>
         <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.js"))'></script>
+        <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("angular-leaflet-directive.min.js"))'></script>
 
 4. Replace the `<ul>` in `app/views/index.scala.html` with:
 
-        <div id="map"></div>
+        <leaflet width="100%" height="500px" markers="markers"></leaflet>
 
-5. Update the `app/assets/stylesheets/index.less` file with:
+5. Update the `app.controller('Tweets'` section of `app/assets/javascripts/index.js` file with the following:
 
-        #map {
-          position: absolute;
-          top: 40px;
-          bottom: 0px;
-          left: 0px;
-          right: 0px;
-        }
-
-6. Update the `app/assets/javascripts/index.coffee` file with the following (replacing the `displayTweets` function):
-
-        map = L.map('map').setView([0, 0], 2)
-        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map)
-        
-        displayTweets = (tweets) ->
-          $.each tweets.statuses, (index, tweet) ->
-            L.marker([tweet.coordinates.coordinates[1], tweet.coordinates.coordinates[0]])
-             .addTo(map)
-             .bindPopup(tweet.text)
-             .openPopup()
+            $scope.tweets = [];
+            $scope.markers = [];
+            
+            $scope.$watch(
+                function() {
+                    return Twitter.tweets;
+                },
+                function(tweets) { 
+                    $scope.tweets = tweets;
+                    
+                    $scope.markers = tweets.map(function(tweet) {
+                        return {
+                            lng: tweet.coordinates.coordinates[0],
+                            lat: tweet.coordinates.coordinates[1],
+                            message: tweet.text,
+                            focus: true
+                        }
+                    });
+                }
+            );
        
-7. Create new functions in `app/controllers/Tweets.scala` to get (or fake) the location of the tweets:
-
-        private def putLatLonInTweet(latLon: JsValue) = __.json.update(__.read[JsObject].map(_ + ("coordinates" -> Json.obj("coordinates" -> latLon))))
-               
-        private def tweetLatLon(tweets: Seq[JsValue]): Future[Seq[JsValue]] = {
-          val tweetsWithLatLonFutures = tweets.map { tweet =>
-             
-            if ((tweet \ "coordinates" \ "coordinates").asOpt[Seq[Double]].isDefined) {
-              Future.successful(tweet)
-            } else {
-              val latLonFuture: Future[(Double, Double)] = (tweet \ "user" \ "location").asOpt[String].map(lookupLatLon).getOrElse(Future.successful(randomLatLon))
-              latLonFuture.map { latLon =>
-                tweet.transform(putLatLonInTweet(Json.arr(latLon._2, latLon._1))).getOrElse(tweet)
+7. Create new functions in `app/controllers/Application.scala` to get (or fake) the location of the tweets:
+        
+          private def putLatLonInTweet(latLon: JsValue) = __.json.update(__.read[JsObject].map(_ + ("coordinates" -> Json.obj("coordinates" -> latLon))))
+        
+          private def tweetLatLon(tweets: Seq[JsValue]): Future[Seq[JsValue]] = {
+            val tweetsWithLatLonFutures = tweets.map { tweet =>
+        
+              if ((tweet \ "coordinates" \ "coordinates").asOpt[Seq[Double]].isDefined) {
+                Future.successful(tweet)
+              } else {
+                val latLonFuture: Future[(Double, Double)] = (tweet \ "user" \ "location").asOpt[String].map(lookupLatLon).getOrElse(Future.successful(randomLatLon))
+                latLonFuture.map { latLon =>
+                  tweet.transform(putLatLonInTweet(Json.arr(latLon._2, latLon._1))).getOrElse(tweet)
+                }
               }
             }
+        
+            Future.sequence(tweetsWithLatLonFutures)
           }
-                 
-          Future.sequence(tweetsWithLatLonFutures)
-        }
-               
-        private def randomLatLon: (Double, Double) = ((Random.nextDouble * 180) - 90, (Random.nextDouble * 360) - 180)
-               
-        private def lookupLatLon(query: String): Future[(Double, Double)] = {
-          val locationFuture = WS.url("http://maps.googleapis.com/maps/api/geocode/json").withQueryString(
-            "sensor" -> "false",
-            "address" -> query
-          ).get()
-                 
-          locationFuture.map { response =>
-            (response.json \\ "location").headOption.map { location =>
-              ((location \ "lat").as[Double], (location \ "lng").as[Double])
-            }.getOrElse(randomLatLon)
+        
+          private def randomLatLon: (Double, Double) = ((Random.nextDouble * 180) - 90, (Random.nextDouble * 360) - 180)
+        
+          private def lookupLatLon(query: String): Future[(Double, Double)] = {
+            val locationFuture = WS.url("http://maps.googleapis.com/maps/api/geocode/json").withQueryString(
+              "sensor" -> "false",
+              "address" -> query
+            ).get()
+        
+            locationFuture.map { response =>
+              (response.json \\ "location").headOption.map { location =>
+                ((location \ "lat").as[Double], (location \ "lng").as[Double])
+              }.getOrElse(randomLatLon)
+            }
           }
-        }
 
-8. In `app/controllers/Tweets.scala` update the `fetchTweets` function to use the new `tweetLatLon` function:
+8. In `app/controllers/Application.scala` update the `fetchTweets` function to use the new `tweetLatLon` function:
 
-        def fetchTweets(query: String): Future[JsValue] = {
-          val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
-          tweetsFuture.flatMap { response =>
-            tweetLatLon((response.json \ "statuses").as[Seq[JsValue]])
-          } recover {
-            case _ => Seq.empty[JsValue]
-          } map { tweets =>
-            Json.obj("statuses" -> tweets)
+          def fetchTweets(query: String): Future[JsValue] = {
+            val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
+            tweetsFuture.flatMap { response =>
+              tweetLatLon((response.json \ "statuses").as[Seq[JsValue]])
+            } recover {
+              case _ => Seq.empty[JsValue]
+            } map { tweets =>
+              Json.obj("statuses" -> tweets)
+            }
           }
-        }
 
 9. Refresh your browser to see the TweetMap!

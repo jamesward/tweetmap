@@ -16,7 +16,6 @@ app.factory('Twitter', function($http, $timeout) {
     };
     
     ws.onmessage = function(event) {
-        console.log(event);
         $timeout(function() {
             twitterService.tweets = JSON.parse(event.data).statuses;
         });
