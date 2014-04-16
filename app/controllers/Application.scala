@@ -15,7 +15,7 @@ import akka.actor.Props
 
 object Application extends Controller {
 
-  def index = Action { implicit request =>
+  def index = Action {
     Ok(views.html.index("TweetMap"))
   }
   
