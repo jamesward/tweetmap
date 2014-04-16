@@ -25,7 +25,6 @@
         import play.api.libs.concurrent.Execution.Implicits.defaultContext
         import play.api.libs.iteratee.{Iteratee, Concurrent}
         import play.api.libs.concurrent.Akka
-        import actors.UserActor
         import play.api.Play.current
         import scala.util.Random
         import akka.actor.Props
@@ -179,6 +178,8 @@
         GET        /ws                   controllers.Application.ws
 
 2. Add a new controller method in `app/controllers/Application.scala`:
+
+          import actors.UserActor
 
           def ws = WebSocket.using[JsValue] { request =>
             val (out, channel) = Concurrent.broadcast[JsValue]
