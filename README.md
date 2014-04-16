@@ -17,6 +17,20 @@
 
 2. Create a new reactive request handler in `app/controllers/Application.scala`:
 
+        import play.api.mvc.{WebSocket, Action, Controller}
+        import scala.concurrent.Future
+        import play.api.libs.json.{JsObject, JsValue, Json}
+        import play.api.libs.json.__
+        import play.api.libs.ws.WS
+        import play.api.libs.concurrent.Execution.Implicits.defaultContext
+        import play.api.libs.iteratee.{Iteratee, Concurrent}
+        import play.api.libs.concurrent.Akka
+        import actors.UserActor
+        import play.api.Play.current
+        import scala.util.Random
+        import akka.actor.Props
+
+
           def search(query: String) = Action.async {
             fetchTweets(query).map(tweets => Ok(tweets))
           }
@@ -36,6 +50,15 @@
 ### Test the Controller
 
 1. Update the `test/ApplicationSpec.scala` file with these tests:
+
+        import org.specs2.mutable._
+        import org.specs2.runner._
+        import org.junit.runner._
+        
+        import play.api.libs.json.JsValue
+        import play.api.test._
+        import play.api.test.Helpers._
+
 
           "Application" should {
         
