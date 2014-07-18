@@ -1,5 +1,5 @@
 import actors.UserActor
-import akka.testkit.TestActorRef
+import akka.testkit.{TestProbe, TestActorRef}
 import org.specs2.mutable._
 import org.specs2.runner._
 import org.specs2.time.NoTimeConversions
@@ -23,27 +23,22 @@ class UserActorSpec extends Specification with NoTimeConversions {
       //make the Play Application Akka Actor System available as an implicit actor system
       implicit val actorSystem = Akka.system
 
-      //This is the function called by UserActor when it fetches tweets.  The function fullfills a promise
-      //with the tweets, which allows the results to be tested.
-      val promiseJson = Promise[Seq[JsValue]]()
-      def validateJson(jsValue: JsValue) {
-        val tweets = (jsValue \ "statuses").as[Seq[JsValue]]
-        promiseJson.success(tweets)
-      }
+      val receiverActorRef = TestProbe()
 
-      val userActorRef = TestActorRef(new UserActor(validateJson))
+      val userActorRef = TestActorRef(new UserActor(receiverActorRef.ref))
 
       val querySearchTerm = "scala"
       val jsonQuery = Json.obj("query" -> querySearchTerm)
 
-      // The tests need to be delayed a certain amount of time so the tick message gets fired.  This can be done using either
-      // Await.result below or using the Akka test kit within(testDuration) {
-
+      // send the query to the Actor
       userActorRef ! jsonQuery
+
+      // test the internal state change
       userActorRef.underlyingActor.maybeQuery.getOrElse("") must beEqualTo(querySearchTerm)
 
-      Await.result(promiseJson.future, 10.seconds).length must beGreaterThan(1)
-
+      // the receiver should have received the search results
+      val queryResults = receiverActorRef.expectMsgType[JsValue](10.seconds)
+      (queryResults \ "statuses").as[Seq[JsValue]].length must beGreaterThan(1)
     }
   }
 }

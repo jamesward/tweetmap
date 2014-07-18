@@ -1,12 +1,14 @@
 package actors
 
-import akka.actor.Actor
-import play.api.libs.json.JsValue
-import scala.concurrent.duration._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import akka.actor.{Actor, ActorRef}
+import akka.pattern.pipe
 import controllers.Application
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.JsValue
 
-class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
+import scala.concurrent.duration._
+
+class UserActor(out: ActorRef) extends Actor {
 
   var maybeQuery: Option[String] = None
 
@@ -15,8 +17,8 @@ class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
   def receive = {
 
     case FetchTweets =>
-      maybeQuery.map { query =>
-        Application.fetchTweets(query).map(tweetUpdate)
+      maybeQuery.foreach { query =>
+        Application.fetchTweets(query).pipeTo(out)
       }
 
     case message: JsValue =>

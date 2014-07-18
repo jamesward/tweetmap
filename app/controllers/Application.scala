@@ -1,17 +1,15 @@
 package controllers
 
-import play.api.mvc.{WebSocket, Action, Controller}
-import scala.concurrent.Future
-import play.api.libs.json.{JsObject, JsValue, Json}
-import play.api.libs.json.__
-import play.api.libs.ws.WS
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.iteratee.{Iteratee, Concurrent}
-import play.api.libs.concurrent.Akka
 import actors.UserActor
-import play.api.Play.current
-import scala.util.Random
 import akka.actor.Props
+import play.api.Play.current
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.{JsObject, JsValue, Json, __}
+import play.api.libs.ws.WS
+import play.api.mvc.{Action, Controller, WebSocket}
+
+import scala.concurrent.Future
+import scala.util.Random
 
 object Application extends Controller {
 
@@ -35,14 +33,8 @@ object Application extends Controller {
     }
   }
 
-  def ws = WebSocket.using[JsValue] { request =>
-    val (out, channel) = Concurrent.broadcast[JsValue]
-
-    val userActor = Akka.system.actorOf(Props(new UserActor(channel.push)))
-
-    val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
-
-    (in, out)
+  def ws = WebSocket.acceptWithActor[JsValue, JsValue] { request => out =>
+    Props(new UserActor(out))
   }
 
   private def putLatLonInTweet(latLon: JsValue) = __.json.update(__.read[JsObject].map(_ + ("coordinates" -> Json.obj("coordinates" -> latLon))))

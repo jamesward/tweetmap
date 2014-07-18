@@ -50,7 +50,7 @@ app.controller('Tweets', function($scope, $http, $timeout, Twitter) {
                     lat: tweet.coordinates.coordinates[1],
                     message: tweet.text,
                     focus: true
-                }
+                };
             });
         }
     );

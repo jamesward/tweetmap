@@ -4,15 +4,14 @@
 <head>
     <title>@title</title>
     <link rel='shortcut icon' type='image/png' href='@routes.Assets.at("images/favicon.png")'>
-    <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("bootstrap.min.css"))'>
-    <link rel='stylesheet' href='@routes.Assets.at("stylesheets/index.css")'>
+    <link rel='stylesheet' href='@routes.Assets.at("lib/bootstrap/css/bootstrap.min.css")'>
+    <link rel='stylesheet' href='@routes.Assets.at("lib/leaflet/leaflet.css")'>
+    <link rel='stylesheet' href='@routes.Assets.at("stylesheets/main.css")'>
     
-    <script src="@routes.WebJarAssets.at(WebJarAssets.locate("angular.min.js"))"></script>
-    <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
-
-    <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.css"))'>
-    <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.js"))'></script>
-    <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("angular-leaflet-directive.min.js"))'></script>
+    <script src="@routes.Assets.at("lib/angularjs/angular.min.js")"></script>
+    <script type='text/javascript' src='@routes.Assets.at("lib/leaflet/leaflet.js")'></script>
+    <script type='text/javascript' src='@routes.Assets.at("lib/angular-leaflet-directive/angular-leaflet-directive.min.js")'></script>
+    <script type='text/javascript' src='@routes.Assets.at("javascripts/main.js")'></script>
 </head>
 <body>
     <div class="navbar navbar-fixed-top">
