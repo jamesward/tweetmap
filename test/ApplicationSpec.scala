@@ -11,7 +11,11 @@ class ApplicationSpec extends Specification {
 
   "Application" should {
 
-    "render index template" in new WithApplication {
+    "send 404 on a bad request" in new WithApplication{
+      route(FakeRequest(GET, "/boum")) must beNone
+    }
+
+    "render index template" in {
       val html = views.html.index("Coco")
 
       contentAsString(html) must contain("Coco")

@@ -4,7 +4,7 @@
 
 1. Install Activator: Copy the zip file to your computer, extract the zip, double-click on the `activator` or `activator.bat` file to launch the Activator UI
 
-2. Create a new app with the `Hello Play Framework (Scala Only)` template
+2. Create a new app with the `Play Scala Seed` template
 
 3. Optional: Open the project in an IDE: Select `Code` then `Open` then select your IDE and follow the instructions to generate the project files and open the project in Eclipse or IntelliJ
 
@@ -17,25 +17,24 @@
 
 2. Create a new reactive request handler in `app/controllers/Application.scala`:
 
-        import play.api.mvc.{WebSocket, Action, Controller}
-        import scala.concurrent.Future
-        import play.api.libs.json.{JsObject, JsValue, Json}
-        import play.api.libs.json.__
-        import play.api.libs.ws.WS
-        import play.api.libs.concurrent.Execution.Implicits.defaultContext
-        import play.api.libs.iteratee.{Iteratee, Concurrent}
-        import play.api.libs.concurrent.Akka
         import play.api.Play.current
-        import scala.util.Random
-        import akka.actor.Props
+        import play.api.libs.concurrent.Execution.Implicits.defaultContext
+        import play.api.libs.json._
+        import play.api.libs.ws.WS
+        import play.api.mvc._
+        
+        import scala.concurrent.Future
 
-
+          def index = Action {
+            Ok(views.html.index("TweetMap"))
+          }
+        
           def search(query: String) = Action.async {
             fetchTweets(query).map(tweets => Ok(tweets))
           }
-          
+        
           def fetchTweets(query: String): Future[JsValue] = {
-            val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
+            val tweetsFuture = WS.url("http://search-twitter-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
             tweetsFuture.map { response =>
               response.json
             } recover {
@@ -61,7 +60,12 @@
 
           "Application" should {
         
-            "render index template" in new WithApplication {
+
+            "send 404 on a bad request" in new WithApplication{
+              route(FakeRequest(GET, "/boum")) must beNone
+            }
+        
+            "render index template" in {
               val html = views.html.index("Coco")
         
               contentAsString(html) must contain("Coco")
@@ -74,7 +78,7 @@
               contentType(home) must beSome.which(_ == "text/html")
               contentAsString(home) must contain ("TweetMap")
             }
-            
+        
             "search for tweets" in new WithApplication {
               val search = controllers.Application.search("typesafe")(FakeRequest())
         
@@ -88,6 +92,53 @@
 2. Run the tests
 
 
+### Bootstrap UI
+
+1. Add WebJar dependency to `build.sbt`:
+
+        "org.webjars" % "bootstrap" % "2.3.1"
+
+2. Restart Play
+
+3. Delete `public/stylesheets`
+
+4. Create a `app/assets/stylesheets/main.less` file:
+
+        body {
+          padding-top: 50px;
+        }
+
+5. Update the `app/views/main.scala.html` file:
+
+        <link rel='stylesheet' href='@routes.Assets.at("lib/bootstrap/css/bootstrap.min.css")'>
+        
+        
+        <body>
+            <div class="navbar navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <a href="#" class="brand pull-left">@title</a>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                @content
+            </div>
+        </body>
+
+6. Update the `app/views/index.scala.html` file:
+
+        @(message: String)
+        
+        @main(message) {
+        
+            hello, world
+        
+        }
+
+7. Run the app and make sure it looks nice: http://localhost:9000
+
+
 ### AngularJS UI
 
 1. Add WebJar dependency to `build.sbt`:
@@ -99,18 +150,17 @@
         <html ng-app="myApp">
         
         
-        <script src="@routes.WebJarAssets.at(WebJarAssets.locate("angular.min.js"))"></script>
-        <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
+        <script src="@routes.Assets.at("lib/angularjs/angular.min.js")"></script>
+        <script type='text/javascript' src='@routes.Assets.at("javascripts/main.js")'></script>
 
-3. Update the `app/views/main.scala.html` file replacing the contents of `<div class="container-fluid">` with:
+3. Update the `app/views/main.scala.html` file replacing the contents of `<body>` with:
 
-
-            <div class="container-fluid" ng-controller="Search">
-                <a href="#" class="brand pull-left">@title</a>
-                <form class="navbar-search pull-left" ng-submit="search()">
-                    <input ng-model="query" class="search-query" placeholder="Search">
-                </form>
-            </div>
+        <div class="container-fluid" ng-controller="Search">
+            <a href="#" class="brand pull-left">@title</a>
+            <form class="navbar-search pull-left" ng-submit="search()">
+                <input ng-model="query" class="search-query" placeholder="Search">
+            </form>
+        </div>
 
 4. Replace the `app/views/index.scala.html` file:
 
@@ -126,7 +176,7 @@
         
         }
 
-5. Create a new file `app/assets/javascripts/index.js` containing:
+5. Create a new file `app/assets/javascripts/main.js` containing:
 
         var app = angular.module('myApp', []);
         
@@ -168,7 +218,11 @@
             
         });
 
-6. Run the app, make a query, and verify the tweets show up: http://localhost:9000
+
+
+6. Restart the Play app
+
+7. Run the app, make a query, and verify the tweets show up: http://localhost:9000
 
 
 ### WebSocket
@@ -180,28 +234,27 @@
 2. Add a new controller method in `app/controllers/Application.scala`:
 
           import actors.UserActor
+          import akka.actor.Props
+          import play.api.libs.json.JsValue
+          import play.api.mvc.WebSocket
 
-          def ws = WebSocket.using[JsValue] { request =>
-            val (out, channel) = Concurrent.broadcast[JsValue]
-        
-            val userActor = Akka.system.actorOf(Props(new UserActor(channel.push)))
-        
-            val in = Iteratee.foreach[JsValue](userActor ! _).map(_ => Akka.system.stop(userActor))
-        
-            (in, out)
+          def ws = WebSocket.acceptWithActor[JsValue, JsValue] { request => out =>
+            Props(new UserActor(out))
           }
         
 3. Create an Actor in `app/actors/UserActor.scala` containing:
 
         package actors
         
-        import akka.actor.Actor
-        import play.api.libs.json.JsValue
-        import scala.concurrent.duration._
-        import play.api.libs.concurrent.Execution.Implicits.defaultContext
+        import akka.actor.{Actor, ActorRef}
+        import akka.pattern.pipe
         import controllers.Application
+        import play.api.libs.concurrent.Execution.Implicits.defaultContext
+        import play.api.libs.json.JsValue
         
-        class UserActor(tweetUpdate: JsValue => Unit) extends Actor {
+        import scala.concurrent.duration._
+        
+        class UserActor(out: ActorRef) extends Actor {
         
           var maybeQuery: Option[String] = None
         
@@ -210,8 +263,8 @@
           def receive = {
         
             case FetchTweets =>
-              maybeQuery.map { query =>
-                Application.fetchTweets(query).map(tweetUpdate)
+              maybeQuery.foreach { query =>
+                Application.fetchTweets(query).pipeTo(out)
               }
         
             case message: JsValue =>
@@ -227,7 +280,7 @@
         
         case object FetchTweets
 
-4. Update the `app.factory` section of `app/assets/javascripts/index.js` with:
+4. Update the `app.factory` section of `app/assets/javascripts/main.js` with:
 
         var ws = new WebSocket("ws://localhost:9000/ws");
         
@@ -255,14 +308,14 @@
 
 1. Add `akka-testkit` to the dependencies in `build.sbt`:
 
-        "com.typesafe.akka" %% "akka-testkit" % "2.2.0" % "test"
+        "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
 
 2. Regenerate the IDE project files to include the new dependency
 
 3. Create a new file in `test/UserActorSpec.scala` containing:
 
         import actors.UserActor
-        import akka.testkit.TestActorRef
+        import akka.testkit.{TestProbe, TestActorRef}
         import org.specs2.mutable._
         import org.specs2.runner._
         import org.specs2.time.NoTimeConversions
@@ -273,7 +326,6 @@
         import play.api.test._
         
         import scala.concurrent.duration._
-        import scala.concurrent.{Await, Promise}
         
         
         @RunWith(classOf[JUnitRunner])
@@ -286,27 +338,22 @@
               //make the Play Application Akka Actor System available as an implicit actor system
               implicit val actorSystem = Akka.system
         
-              //This is the function called by UserActor when it fetches tweets.  The function fullfills a promise
-              //with the tweets, which allows the results to be tested.
-              val promiseJson = Promise[Seq[JsValue]]()
-              def validateJson(jsValue: JsValue) {
-                val tweets = (jsValue \ "statuses").as[Seq[JsValue]]
-                promiseJson.success(tweets)
-              }
+              val receiverActorRef = TestProbe()
         
-              val userActorRef = TestActorRef(new UserActor(validateJson))
+              val userActorRef = TestActorRef(new UserActor(receiverActorRef.ref))
         
               val querySearchTerm = "scala"
               val jsonQuery = Json.obj("query" -> querySearchTerm)
         
-              // The tests need to be delayed a certain amount of time so the tick message gets fired.  This can be done using either
-              // Await.result below or using the Akka test kit within(testDuration) {
-        
+              // send the query to the Actor
               userActorRef ! jsonQuery
+        
+              // test the internal state change
               userActorRef.underlyingActor.maybeQuery.getOrElse("") must beEqualTo(querySearchTerm)
         
-              Await.result(promiseJson.future, 10.seconds).length must beGreaterThan(1)
-        
+              // the receiver should have received the search results
+              val queryResults = receiverActorRef.expectMsgType[JsValue](10.seconds)
+              (queryResults \ "statuses").as[Seq[JsValue]].length must beGreaterThan(1)
             }
           }
         }
@@ -318,25 +365,25 @@
 
 1. Add a new dependency to the `build.sbt` file:
 
-        "org.webjars" % "angular-leaflet-directive" % "0.7.6",
+        "org.webjars" % "angular-leaflet-directive" % "0.7.6"
 
 2. Restart the Play app
 
 3. Include the Leaflet CSS and JS in the `app/views/main.scala.html` file:
 
-        <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.css"))'>
-        <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("leaflet.js"))'></script>
-        <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("angular-leaflet-directive.min.js"))'></script>
+        <link rel='stylesheet' href='@routes.Assets.at("lib/leaflet/leaflet.css")'>
+        <script type='text/javascript' src='@routes.Assets.at("lib/leaflet/leaflet.js")'></script>
+        <script type='text/javascript' src='@routes.Assets.at("lib/angular-leaflet-directive/angular-leaflet-directive.min.js")'></script>
 
 4. Replace the `<ul>` in `app/views/index.scala.html` with:
 
         <leaflet width="100%" height="500px" markers="markers"></leaflet>
 
-5. Update the first line of the `app/assets/javascripts/index.js` file with the following:
+5. Update the first line of the `app/assets/javascripts/main.js` file with the following:
 
             var app = angular.module('myApp', ["leaflet-directive"]);
 
-6. Update the `app.controller('Tweets'` section of the `app/assets/javascripts/index.js` file with the following:
+6. Update the `app.controller('Tweets'` section of the `app/assets/javascripts/main.js` file with the following:
 
             $scope.tweets = [];
             $scope.markers = [];
@@ -354,7 +401,7 @@
                             lat: tweet.coordinates.coordinates[1],
                             message: tweet.text,
                             focus: true
-                        }
+                        };
                     });
                 }
             );
@@ -397,7 +444,7 @@
 8. In `app/controllers/Application.scala` update the `fetchTweets` function to use the new `tweetLatLon` function:
 
           def fetchTweets(query: String): Future[JsValue] = {
-            val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
+            val tweetsFuture = WS.url("http://search-twitter-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
             tweetsFuture.flatMap { response =>
               tweetLatLon((response.json \ "statuses").as[Seq[JsValue]])
             } recover {
