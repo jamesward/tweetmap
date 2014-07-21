@@ -23,7 +23,7 @@ object Application extends Controller {
 
   // searches for tweets based on a query
   def fetchTweets(query: String): Future[JsValue] = {
-    val tweetsFuture = WS.url("http://twitter-search-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
+    val tweetsFuture = WS.url("http://search-twitter-proxy.herokuapp.com/search/tweets").withQueryString("q" -> query).get()
     tweetsFuture.flatMap { response =>
       tweetLatLon((response.json \ "statuses").as[Seq[JsValue]])
     } recover {
