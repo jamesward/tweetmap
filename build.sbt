@@ -13,5 +13,3 @@ libraryDependencies ++= Seq(
   "org.webjars" % "angular-leaflet-directive" % "0.7.6",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
 )
-
-//includeFilter in (Assets, LessKeys.less) := "main.less"
